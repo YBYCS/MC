@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.Mesh;
 
 public abstract class Block : MonoBehaviour {
     public abstract string blockName { get; }
@@ -49,27 +50,51 @@ public abstract class Block : MonoBehaviour {
         }
     }
 
-    public void Init(int x, int y, int z) {
+    public virtual void Init(MapData data,int i,int j,int k) {
+        Setposition(data.x * 16 + i, data.y * 16 + j, k);
+        ShowBlock(data,  i, j, k);
+    
+    }
+    public void Setposition(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        ShowBlock();
+        transform.position = new Vector3(x, y, z);
+        
     }
 
     //TODO
-    public virtual void ShowBlock() {
+    public virtual void ShowBlock(MapData data, int i, int j, int k) {
+        
         var t = transform.Find("Left");
-        AddSprite(t, LeftSprite);
-        t = transform.Find("Right");
-        AddSprite(t, RightSprite);
-        t = transform.Find("Top");
-        AddSprite(t, TopSprite);
-        t = transform.Find("Bottom");
-        AddSprite(t, BottomSprite);
-        t = transform.Find("Front");
-        AddSprite(t, FrontSprite);
-        t = transform.Find("Back");
-        AddSprite(t, BackSprite);
+        var gm = GameManager.Instance;
+        if (gm.IsShouldShow(x - 1, y, z)) {
+            AddSprite(t, LeftSprite);
+        }
+        if (gm.IsShouldShow(x + 1, y, z)) {
+            t = transform.Find("Right");
+            AddSprite(t, RightSprite);
+        }
+        if (gm.IsShouldShow(x , y+1, z)) {
+            t = transform.Find("Top");
+            Color color;
+            ColorUtility.TryParseHtmlString("#91bd59", out color);
+            AddSprite(t, TopSprite,color);
+        }
+        if (gm.IsShouldShow(x, y-1, z)) {
+            t = transform.Find("Bottom");
+            AddSprite(t, BottomSprite);
+        }
+        if (gm.IsShouldShow(x, y, z-1)) {
+            t = transform.Find("Front");
+            AddSprite(t, FrontSprite);
+        }
+        if (gm.IsShouldShow(x, y, z + 1)) {
+            t = transform.Find("Back");
+            AddSprite(t, BackSprite);
+        }
+
+
     
     }
     protected void AddSprite(Transform transform,Sprite sprite) {
