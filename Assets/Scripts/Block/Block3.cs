@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class GrassBlock : Block {
-    public override string blockName => "ฒÝตุ";
-
+/// <summary>
+/// ฒÝตุ id = 3 
+/// </summary>				
+public class Block3 : Block {
     public override int id => 3;
+
+    public override string blockName => "ฒÝตุ";
 
     public override bool isTransparency => false;
 
@@ -21,5 +21,5 @@ public class GrassBlock : Block {
 
     protected override string BackSpritePath => "Blocks/grass_side";
 
-
 }
+

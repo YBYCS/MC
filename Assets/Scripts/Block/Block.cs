@@ -6,6 +6,8 @@ using static UnityEngine.Mesh;
 
 public abstract class Block : MonoBehaviour {
     public abstract string blockName { get; }
+    public abstract int id { get; }
+    public abstract bool isTransparency { get; }
     public int x, y, z;
     protected abstract string LeftSpritePath { get; }
     protected abstract string RightSpritePath { get; }
@@ -65,6 +67,9 @@ public abstract class Block : MonoBehaviour {
 
     //TODO
     public virtual void ShowBlock(MapData data, int i, int j, int k) {
+        if(id == 2) {
+            Debug.Log(2);
+        }
         
         var t = transform.Find("Left");
         var gm = GameManager.Instance;
