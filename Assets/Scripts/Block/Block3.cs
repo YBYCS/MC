@@ -1,4 +1,5 @@
 
+using UnityEngine;
 /// <summary>
 /// 草地 id = 3 
 /// </summary>				
@@ -20,6 +21,16 @@ public class Block3 : Block {
     protected override string FrontSpritePath => "Blocks/grass_side";
 
     protected override string BackSpritePath => "Blocks/grass_side";
+
+    //修改顶面颜色
+    public override void ShowBlock(MapData data, int i, int j, int k) {
+        base.ShowBlock(data, i, j, k);
+        var t = transform.Find("Top");
+        var s = transform.GetComponent<SpriteRenderer>();
+        Color color;
+        ColorUtility.TryParseHtmlString("#91bd59", out color);
+        s.color = color;
+    }
 
 }
 

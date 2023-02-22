@@ -39,8 +39,7 @@ public class GameManager : Singleton<GameManager>
         d.y = 0;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                var h = 128 * Mathf.PerlinNoise(i / 16f, j / 16f);
-                //+ 64 * Mathf.PerlinNoise(i / 16, j / 16);
+                var h = 128 * Mathf.PerlinNoise(i / 16f, j / 16f)+ 64 * Mathf.PerlinNoise(i / 16, j / 16);
                 //+ 32 * Mathf.PerlinNoise(i / 16, j / 16);
                 //+ 64 * Mathf.PerlinNoise( i / 16, j / 16) + 32 * Mathf.PerlinNoise( i / 16,  j / 16) ;
                 //Debug.Log(new Vector3(i,j,h));

@@ -82,9 +82,7 @@ public abstract class Block : MonoBehaviour {
         }
         if (gm.IsShouldShow(x , y+1, z)) {
             t = transform.Find("Top");
-            Color color;
-            ColorUtility.TryParseHtmlString("#91bd59", out color);
-            AddSprite(t, TopSprite,color);
+            AddSprite(t, TopSprite);
         }
         if (gm.IsShouldShow(x, y-1, z)) {
             t = transform.Find("Bottom");
