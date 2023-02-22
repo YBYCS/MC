@@ -9,11 +9,12 @@ public class GameManager : Singleton<GameManager>
     [SerializeField]
     GameObject m_BlockPrefab;
     MapData testData;
+    Dictionary<(int, int), MapData> mapTest = new Dictionary<(int, int), MapData>();
     // Start is called before the first frame update
     void Start()
     {
         Init();
-        Show();
+        
     }
 
     // Update is called once per frame
@@ -23,8 +24,16 @@ public class GameManager : Singleton<GameManager>
     }
 
     void Init() {
-        CreateMapData();
-
+        for (int i = 0; i < 4; i++) {
+            
+                mapTest.Add((i, 0), CreateMapData(i, 0));
+            
+        }
+        for (int i = 0; i < 4; i++) {
+            
+                Show(mapTest[(i, 0)]);
+            
+        }
     }
 
     void CreateGrass() {
@@ -33,13 +42,14 @@ public class GameManager : Singleton<GameManager>
         s.Init(testData,0, 0, 0);
     }
 
-    void CreateMapData() {
+    MapData CreateMapData(int x,int y) {
         var d = new MapData();
-        d.x = 0;
-        d.y = 0;
+        d.x = x;
+        d.y = y;
+        float max = 23;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                var h = 128 * Mathf.PerlinNoise(i / 16f, j / 16f)+ 64 * Mathf.PerlinNoise(i / 16, j / 16);
+                var h = 128 * Mathf.PerlinNoise((i+x*16) / max, (j+y*16) / max) + 64 * Mathf.PerlinNoise((i + x * 16) / max, (j + y * 16 )/ max);
                 //+ 32 * Mathf.PerlinNoise(i / 16, j / 16);
                 //+ 64 * Mathf.PerlinNoise( i / 16, j / 16) + 32 * Mathf.PerlinNoise( i / 16,  j / 16) ;
                 //Debug.Log(new Vector3(i,j,h));
@@ -69,15 +79,15 @@ public class GameManager : Singleton<GameManager>
                 }
             }
         }
-        testData = d;
+        return d;
 
     }
 
-    void Show() {
+    void Show(MapData map) {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 256; j++) {
                 for (int k = 0; k < 16; k++) {
-                    if (testData.position[i, j, k] == 0) {
+                    if (map.position[i, j, k] == 0) {
                         continue;
                     }
                     //switch (testData.position[i, j, k]) {
@@ -92,7 +102,7 @@ public class GameManager : Singleton<GameManager>
                     //        CreateBlock<GrassBlock>(testData, i, j, k);
                     //        break;
                     //}
-                    CreateBlock(testData.position[i, j, k], testData, i, j, k);
+                    CreateBlock(map.position[i, j, k], map, i, j, k);
                 }
             }
         }
@@ -157,6 +167,10 @@ public class GameManager : Singleton<GameManager>
     /// <param name="y"></param>
     /// <returns></returns>
     public MapData GetMapData(int x,int y) {
-        return testData;
+        //TODO
+        if (x < 4 ) {
+            return mapTest[(x, 0)];
+        }
+        return mapTest[(0, 0)];
     }
 }
