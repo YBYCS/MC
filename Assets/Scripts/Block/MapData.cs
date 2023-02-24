@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MapData 
 {
-    public int x, y;
+    public int x, z;
     public byte [,,] position = new byte [16,256,16];
 
 }

@@ -52,7 +52,7 @@ public abstract class Block : MonoBehaviour {
     }
 
     public virtual void Init(MapData data,int i,int j,int k) {
-        Setposition(data.x * 16 + i, data.y * 16 + j, k);
+        Setposition(data.x * 16 + i, data.z * 16 + j, k);
         ShowBlock(data,  i, j, k);
     
     }
@@ -66,32 +66,30 @@ public abstract class Block : MonoBehaviour {
 
     //TODO
     public virtual void ShowBlock(MapData data, int i, int j, int k) {
-        if(id == 2) {
-            Debug.Log(2);
-        }
+
         
         var t = transform.Find("Left");
         var gm = GameManager.Instance;
-        if (gm.IsShouldShow(x - 1, y, z)) {
+        if (gm.IsVisible(x - 1, y, z)) {
             AddSprite(t, LeftSprite);
         }
-        if (gm.IsShouldShow(x + 1, y, z)) {
+        if (gm.IsVisible(x + 1, y, z)) {
             t = transform.Find("Right");
             AddSprite(t, RightSprite);
         }
-        if (gm.IsShouldShow(x , y+1, z)) {
+        if (gm.IsVisible(x , y+1, z)) {
             t = transform.Find("Top");
             AddSprite(t, TopSprite);
         }
-        if (gm.IsShouldShow(x, y-1, z)) {
+        if (gm.IsVisible(x, y-1, z)) {
             t = transform.Find("Bottom");
             AddSprite(t, BottomSprite);
         }
-        if (gm.IsShouldShow(x, y, z-1)) {
+        if (gm.IsVisible(x, y, z-1)) {
             t = transform.Find("Front");
             AddSprite(t, FrontSprite);
         }
-        if (gm.IsShouldShow(x, y, z + 1)) {
+        if (gm.IsVisible(x, y, z + 1)) {
             t = transform.Find("Back");
             AddSprite(t, BackSprite);
         }
