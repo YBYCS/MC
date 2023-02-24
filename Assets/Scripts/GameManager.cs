@@ -27,14 +27,17 @@ public class GameManager : Singleton<GameManager>
 
     void Init() {
         for (int i = 0; i < 4; i++) {
-            
-                mapTest.Add((i, 0), CreateMapData(i, 0));
+            for (int j = 0; j < 4; j++) {
+                mapTest.Add((i, j), CreateMapData(i, j));
+
+            }
             
         }
         for (int i = 0; i < 4; i++) {
-
-            //Show(mapTest[(i, 0)]);
-            ShowNew(mapTest[(i, 0)]);
+            for (int j = 0; j < 4; j++) {
+                //Show(mapTest[(i, 0)]);
+                Show(mapTest[(i, j)]);
+            }
         }
     }
 
@@ -48,7 +51,7 @@ public class GameManager : Singleton<GameManager>
         var d = new MapData();
         d.x = x;
         d.z = y;
-        float max = 23;
+        float max = 113;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 var h = 128 * Mathf.PerlinNoise((i+x*16) / max, (j+y*16) / max) + 64 * Mathf.PerlinNoise((i + x * 16) / max, (j + y * 16 )/ max);
@@ -85,32 +88,8 @@ public class GameManager : Singleton<GameManager>
 
     }
 
+
     void Show(MapData map) {
-        var p = new GameObject(map.x+"-"+map.z);
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 256; j++) {
-                for (int k = 0; k < 16; k++) {
-                    if (map.position[i, j, k] == 0) {
-                        continue;
-                    }
-                    //switch (testData.position[i, j, k]) {
-                    //    case 1:
-                    //        //泥土
-                    //        break;
-                    //    case 2:
-                    //        //TODO 海水
-                    //        break;
-                    //    case 3:
-                    //        //草地
-                    //        CreateBlock<GrassBlock>(testData, i, j, k);
-                    //        break;
-                    //}
-                    CreateBlock(map.position[i, j, k], map, i, j, k,p);
-                }
-            }
-        }
-    }
-    void ShowNew(MapData map) {
         var p = Instantiate(m_MapPrefab);
         p.name = map.x + "-" + map.z;
         p.transform.position = new Vector3(map.x*16, 0, map.z*16);
@@ -140,48 +119,29 @@ public class GameManager : Singleton<GameManager>
                     }
                     //生成面
                     if (IsVisible(map.x*16+i, j + 1, map.z*16+k)) {
-                        var position = new Vector3(i, j, k);
-                        Vector3 v1 = new Vector3(-0.5f, 0.5f, -0.5f)+ position;
-                        Vector3 v2 = new Vector3(-0.5f, 0.5f, 0.5f) + position;
-                        Vector3 v3 = new Vector3(0.5f, 0.5f, 0.5f) + position;
-                        Vector3 v4 = new Vector3(0.5f, 0.5f, -0.5f) + position;
-                        vertices.Add(v1);
-                        vertices.Add(v2);
-                        vertices.Add(v3);
-                        vertices.Add(v4);
-                        triangles.Add(0+count);
-                        triangles.Add(1 + count);
-                        triangles.Add(2 + count);
-
-                        triangles.Add(0 + count);
-                        triangles.Add(2 + count);
-                        triangles.Add(3 + count);
-                        //取顶面
-                        //var rect = rects[map.position[i, j, k]%3];
-                        var rect = rects[0];
-                        uvs.Add(new Vector2(rect.xMin, rect.yMin));
-                        uvs.Add(new Vector2(rect.xMax, rect.yMin));
-                        uvs.Add(new Vector2(rect.xMax, rect.yMax));
-                        uvs.Add(new Vector2(rect.xMin, rect.yMax));
+                        AddFace2Mesh(map.position[i, j, k],new Vector3(i,j,k), vertices, triangles, uvs,Face.Top, count, rects);
                         count += 4;
                     }
-
-
-
-                    //switch (testData.position[i, j, k]) {
-                    //    case 1:
-                    //        //泥土
-                    //        break;
-                    //    case 2:
-                    //        //TODO 海水
-                    //        break;
-                    //    case 3:
-                    //        //草地
-                    //        CreateBlock<GrassBlock>(testData, i, j, k);
-                    //        break;
-                    //}
-
-                    //CreateBlockNew(map.position[i, j, k], map, i, j, k, p);
+                    if(IsVisible(map.x * 16 + i, j-1, map.z * 16 + k)) {
+                        AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Bottom, count, rects);
+                        count += 4;
+                    }
+                    if (IsVisible(map.x * 16 + i-1, j, map.z * 16 + k)) {
+                        AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Left, count, rects);
+                        count += 4;
+                    }
+                    if (IsVisible(map.x * 16 + i+1, j, map.z * 16 + k)) {
+                        AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Right, count, rects);
+                        count += 4;
+                    }
+                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k-1)) {
+                        AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Front, count, rects);
+                        count += 4;
+                    }
+                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k+1)) {
+                        AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Back, count, rects);
+                        count += 4;
+                    }
                 }
             }
         }
@@ -196,6 +156,90 @@ public class GameManager : Singleton<GameManager>
 
 
     }
+    enum Face {
+        Top,
+        Bottom,
+        Left,
+        Right,
+        Front,
+        Back
+    }
+    void AddFace2Mesh(int id,Vector3 position, List<Vector3> vertices, List<int> triangles, List<Vector2> uvs,Face face,int count, Rect[] rects ) {
+        Vector3[] v = GetFaceVertices(face);
+        Vector3 v1 = v[0] + position;
+        Vector3 v2 = v[1] + position;
+        Vector3 v3 = v[2] + position;
+        Vector3 v4 = v[3] + position;
+        vertices.Add(v1);
+        vertices.Add(v2);
+        vertices.Add(v3);
+        vertices.Add(v4);
+        triangles.Add(0 + count);
+        triangles.Add(1 + count);
+        triangles.Add(2 + count);
+
+        triangles.Add(0 + count);
+        triangles.Add(2 + count);
+        triangles.Add(3 + count);
+        //取顶面
+        //var rect = rects[map.position[i, j, k]%3];
+
+        //TODO
+        id = id>2?2:id;
+        id--;
+        var rect = rects[id];
+        uvs.Add(new Vector2(rect.xMin, rect.yMin));
+        uvs.Add(new Vector2(rect.xMax, rect.yMin));
+        uvs.Add(new Vector2(rect.xMax, rect.yMax));
+        uvs.Add(new Vector2(rect.xMin, rect.yMax));
+
+    }
+    //TODO 可以优化
+    Vector3[] GetFaceVertices(Face face) {
+        Vector3[] vertices = new Vector3[4];
+
+        switch (face) {
+            case Face.Top:
+                vertices[0] = new Vector3(-0.5f, 0.5f, -0.5f);
+                vertices[1] = new Vector3(-0.5f, 0.5f, 0.5f);
+                vertices[2] = new Vector3(0.5f, 0.5f, 0.5f);
+                vertices[3] = new Vector3(0.5f, 0.5f, -0.5f);
+                break;
+            case Face.Bottom:
+                vertices[0] = new Vector3(-0.5f, -0.5f, -0.5f);
+                vertices[1] = new Vector3(0.5f, -0.5f, -0.5f);
+                vertices[2] = new Vector3(0.5f, -0.5f, 0.5f);
+                vertices[3] = new Vector3(-0.5f, -0.5f, 0.5f);
+                break;
+            case Face.Back:
+                vertices[0] = new Vector3(0.5f, -0.5f, 0.5f);
+                vertices[1] = new Vector3(0.5f, 0.5f, 0.5f);
+                vertices[2] = new Vector3(-0.5f, 0.5f, 0.5f);
+                vertices[3] = new Vector3(-0.5f, -0.5f, 0.5f);
+                break;
+            case Face.Front:
+                vertices[0] = new Vector3(-0.5f, 0.5f, -0.5f);
+                vertices[1] = new Vector3(0.5f, 0.5f, -0.5f);
+                vertices[2] = new Vector3(0.5f, -0.5f, -0.5f);
+                vertices[3] = new Vector3(-0.5f, -0.5f, -0.5f);
+                break;
+            case Face.Left:
+                vertices[0] = new Vector3(-0.5f, -0.5f, -0.5f);
+                vertices[1] = new Vector3(-0.5f, -0.5f, 0.5f);
+                vertices[2] = new Vector3(-0.5f, 0.5f, 0.5f);
+                vertices[3] = new Vector3(-0.5f, 0.5f, -0.5f);
+                break;
+            case Face.Right:
+                vertices[0] = new Vector3(0.5f, -0.5f, -0.5f);
+                vertices[1] = new Vector3(0.5f, 0.5f, -0.5f);
+                vertices[2] = new Vector3(0.5f, 0.5f, 0.5f);
+                vertices[3] = new Vector3(0.5f, -0.5f, 0.5f);
+                break;
+        }
+
+        return vertices;
+    }
+
     void CreateBlock<T>(MapData mapData,int x,int y,int z) where T:Block{
         var block = Instantiate(m_BlockPrefab);
         var s = block.AddComponent<T>();
@@ -243,6 +287,7 @@ public class GameManager : Singleton<GameManager>
         x %= 16;
         z %= 16;
         var d = GetMapData(i, j);
+        if (d == null) return true;
         //Debug.Log(x + " " + y + " " + z);
         if (d.position[x,y,z] != 0 ) {
             //string cn = "Block" + d.position[x, y, z];
@@ -261,9 +306,15 @@ public class GameManager : Singleton<GameManager>
     /// <returns></returns>
     public MapData GetMapData(int x,int y) {
         //TODO
-        if (x < 4 ) {
-            return mapTest[(x, 0)];
+        //if (x < 4&&y<4 ) {
+        //    return mapTest[(x, y)];
+        //}
+        //return mapTest[(0, 0)];
+        if(mapTest.TryGetValue((x, y), out MapData value)) {
+            return value;
         }
-        return mapTest[(0, 0)];
+        else {
+            return null;
+        }
     }
 }

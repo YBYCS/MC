@@ -32,23 +32,7 @@ public class test : MonoBehaviour
         //block = Instantiate(m_BlockPrefab);
         Rect rect = rects[0];
         block1(rect);
-        //Vector2 pivot = new Vector2(0.5f, 0.5f);
-        //Vector4 border = Vector4.zero;
-        //Sprite sprite = Sprite.Create(atlas, rect, pivot, 16, 0, SpriteMeshType.Tight, border);
-        //Sprite sprite = Sprite.Create(atlas, rect, pivot, 16);
-        //Sprite sprite = Sprite.Create(atlas, new Rect(0, 0, atlas.width, atlas.height), new Vector2(0.5f, 0.5f), 16); ;
-        //var t = block.transform.Find("Left");
-        //    AddSprite(t, sprite);
-        //    t = block.transform.Find("Right");
-        //    AddSprite(t, sprite);
-        //    t = block.transform.Find("Top");
-        //    AddSprite(t, sprite);
-        //    t = block.transform.Find("Bottom");
-        //    AddSprite(t, sprite);
-        //    t = block.transform.Find("Front");
-        //    AddSprite(t, sprite);
-        //    t = block.transform.Find("Back");
-        //    AddSprite(t, sprite);
+
 
     }
 
