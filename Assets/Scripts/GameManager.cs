@@ -12,6 +12,14 @@ public class GameManager : Singleton<GameManager>
     GameObject m_MapPrefab;
     MapData testData;
     Dictionary<(int, int), MapData> mapTest = new Dictionary<(int, int), MapData>();
+    enum BlockType {
+        dirt = 1,
+        water,
+        grass,
+        cobblestone,
+        grass_sn,
+        ice
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -26,16 +34,17 @@ public class GameManager : Singleton<GameManager>
     }
 
     void Init() {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        int max = 5;
+        for (int i = 0; i < max; i++) {
+            for (int j = 0; j < max; j++) {
                 mapTest.Add((i, j), CreateMapData(i, j));
 
             }
             
         }
         CreateAtlas();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < max; i++) {
+            for (int j = 0; j < max; j++) {
                 //Show(mapTest[(i, 0)]);
                 Show(mapTest[(i, j)]);
             }
@@ -51,22 +60,33 @@ public class GameManager : Singleton<GameManager>
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 var h = GetHeight(i + x * 16, j + y * 16);
-
+                d.position[i, 256, j] = (byte)h;
                 //注意K才是高度
-                for (int k = 0; (k <= h||k<64)&&k<256; k++) {
+                for (int k = 0; (k <= h||k<=64)&&k<256; k++) {
                     if (k < h) {
                         //改为泥土
                         d.position[i, k, j] = GetBlockTest(k, (int)h);
                     }
                     
                     else if(k == h) {
-                        //并且如果在水下应该是泥土
+                        //并且如果在水下应该是泥土 TODO 沙子
                         if (h < 64) {
                             d.position[i, k, j] = 1;
                         }
                         else {
-                            //草坪
-                            d.position[i, k, j] = 3;
+                            var t = GetTemperature(i, k, j);
+                            var hd = GetHumidity(i, k, j);
+                            //下雪
+                            if (t <= 35 && hd > 0.3f) {
+                                d.position[i,k,j] = (byte)BlockType.grass_sn;
+                            }
+                            else if(h<64&& t < 0 && hd > 0.3f) {
+                                d.position[i, k, j] = (byte)BlockType.ice;
+                            }
+                            else {
+                                //草坪
+                                d.position[i, k, j] = 3;
+                            }
                         }
                     }
                     else if (h < 64) {
@@ -79,6 +99,12 @@ public class GameManager : Singleton<GameManager>
         return d;
 
     }
+    /// <summary>
+    /// 判断返回草地还是岩石
+    /// </summary>
+    /// <param name="h"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
     byte GetBlockTest(int h, int max) {
         if (h <= 45) {
             return 4;
@@ -103,26 +129,80 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    int send = 114514;
+    /// <summary>
+    /// 将一个数，映射为0-1的数
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    float map2decimals(float x,float customSend=0) {
+        float b = x / 16;
+        b = Fract(Mathf.Sin(send) * 1000)/100*b;
+        int max = 4000;
+        x %= max;
+        x /= max;
+        x += b;
+        x += customSend;
+        x %= 1;
+        return x;
+    }
+    float Fract(float x) {
+        return x - Mathf.Floor(x);
+    }
+
     /// <summary>
     /// 返回对应高度
     /// </summary>
     /// <param name="x">x位置</param>
     /// <param name="y">y位置</param>
     int GetHeight(float x, float y) {
-        int max = 6000000;
-        int send = 114514;
-        x += send;
-        y += send;
-        x /= max;
-        y /= max;
+        x = map2decimals(x,0.5f);
+        y = map2decimals(y,0.14f);
         //基本频率
-        float bf = 30000;
-        float rate = 3;
+        float bf = 8;
+        float rate = 2;
         var h = 128 * Mathf.PerlinNoise(bf * x%1, bf * y % 1) + 64 * Mathf.PerlinNoise(rate * bf*x % 1, rate * bf *y % 1) + 32 * Mathf.PerlinNoise(rate * rate * bf *x % 1, rate * rate * bf *y % 1);
-        //Debug.Log(h);
         return (int)h;
 
     }
+    float GetTemperature(float x,float y,int h) {
+        x = map2decimals(x, 0.34f);
+        y = map2decimals(y, 0.78f);
+        //基本频率
+        float bf = 2;
+        var b = Mathf.PerlinNoise(bf * x % 1, bf * y % 1);
+        //int max = 6000000;
+        //x += send+ 60000;
+        //y += send + 60000;
+        //x /= max;
+        //y /= max;
+        //float bf = 8;
+        //var pl = new PerlinNoise();
+        //float b = (float)pl.perlin(bf * x % 1, bf * y % 1, h);
+        //线性插值返回基础温度
+        b = Mathf.Lerp(-35, 35, b);
+        b -= h > 64 ? 0 : (h - 64) * 0.6f;
+        return b;
+    }
+    /// <summary>
+    /// 获取湿度
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="h"></param>
+    /// <returns></returns>
+    float GetHumidity(float x, float y, int h) {
+        x = map2decimals(x, 0.74f);
+        y = map2decimals(y, 0.18f);
+        //基本频率
+        float bf = 2;
+        var b = Mathf.PerlinNoise(bf * x % 1, bf * y % 1);
+        b += b < 0.9 ? 0.1f : 0;
+        Debug.Log(b);
+        //线性插值返回基础温度
+        return b;
+    }
+
     Texture2D atlas;
     Rect[] rects;
     void CreateAtlas() {
@@ -146,6 +226,14 @@ public class GameManager : Singleton<GameManager>
         textures.Add(Resources.Load<Texture2D>("Blocks/cobblestone"));
         textures.Add(Resources.Load<Texture2D>("Blocks/cobblestone"));
 
+
+        textures.Add(Resources.Load<Texture2D>("Blocks/snow"));
+        textures.Add(Resources.Load<Texture2D>("Blocks/grass_side_snowed"));
+        textures.Add(Resources.Load<Texture2D>("Blocks/dirt"));
+
+        textures.Add(Resources.Load<Texture2D>("Blocks/ice"));
+        textures.Add(Resources.Load<Texture2D>("Blocks/ice"));
+        textures.Add(Resources.Load<Texture2D>("Blocks/ice"));
         rects = atlas.PackTextures(textures.ToArray(), 1, 2048);
         atlas.filterMode = FilterMode.Point;
     }
@@ -170,28 +258,38 @@ public class GameManager : Singleton<GameManager>
                     if (map.position[i, j, k] == 0) {
                         continue;
                     }
-                    //生成面
-                    if (IsVisible(map.x*16+i, j + 1, map.z*16+k)) {
+                    //生成面部分
+                    //判断是否为透明方块
+                    bool isT;
+                    switch (map.position[i, j, k]) {
+                        case (byte)BlockType.water:
+                            isT = true;
+                            break;
+                        default:
+                            isT = false;
+                            break;
+                    }
+                    if (IsVisible(map.x*16+i, j + 1, map.z*16+k,isT)) {
                         AddFace2Mesh(map.position[i, j, k],new Vector3(i,j,k), vertices, triangles, uvs,Face.Top, count, rects);
                         count += 4;
                     }
-                    if(IsVisible(map.x * 16 + i, j-1, map.z * 16 + k)) {
+                    if(IsVisible(map.x * 16 + i, j-1, map.z * 16 + k, isT)) {
                         AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Bottom, count, rects);
                         count += 4;
                     }
-                    if (IsVisible(map.x * 16 + i-1, j, map.z * 16 + k)) {
+                    if (IsVisible(map.x * 16 + i-1, j, map.z * 16 + k, isT)) {
                         AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Left, count, rects);
                         count += 4;
                     }
-                    if (IsVisible(map.x * 16 + i+1, j, map.z * 16 + k)) {
+                    if (IsVisible(map.x * 16 + i+1, j, map.z * 16 + k, isT)) {
                         AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Right, count, rects);
                         count += 4;
                     }
-                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k-1)) {
+                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k-1, isT)) {
                         AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Front, count, rects);
                         count += 4;
                     }
-                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k+1)) {
+                    if (IsVisible(map.x * 16 + i, j, map.z * 16 + k+1, isT)) {
                         AddFace2Mesh(map.position[i, j, k], new Vector3(i, j, k), vertices, triangles, uvs, Face.Back, count, rects);
                         count += 4;
                     }
@@ -327,15 +425,16 @@ public class GameManager : Singleton<GameManager>
     void CreateBlockNew(int id, MapData mapData, int x, int y, int z, GameObject parent) {
 
     }
-
+    //TODO 水的双面材质
     /// <summary>
     /// 是否要显示该面，查询挡住该面的方块是否存在或者透明
     /// </summary>
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="z"></param>
+    /// <param name="isTransparencyBlock">要检测的方块是否是透明方块</param>
     /// <returns>true为显示false为不显示</returns>
-    public bool IsVisible(int x,int y,int z) {
+    public bool IsVisible(int x,int y,int z,bool isTransparencyBlock = false) {
 
         var i = x / 16;
         var j = z / 16;
@@ -358,11 +457,8 @@ public class GameManager : Singleton<GameManager>
         //Debug.Log(x + " " + y + " " + z);
         //Debug.Log(new Vector3(x, y, z));
         if (d.position[x,y,z] != 0 ) {
-            //string cn = "Block" + d.position[x, y, z];
-            //Type type = Type.GetType(cn);  // 获取类型
-            //Block cb = (Block)Activator.CreateInstance(type);
-            //return cb.isTransparency;
-            return d.position[x,y,z] == 2;
+            //如果是透明方块 不接触空气一面返回假,否则判断是否为透明方块决定是否显示
+            return isTransparencyBlock?false: d.position[x, y, z] == 2;
         }
         return true;
     }
