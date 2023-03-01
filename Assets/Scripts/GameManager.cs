@@ -52,14 +52,15 @@ public class GameManager : Singleton<GameManager>
     }
 
 
-    MapData CreateMapData(int x,int y) {
+    MapData CreateMapData(int cx,int cz) {
         var d = new MapData();
-        d.x = x;
-        d.z = y;
+        d.x = cx;
+        d.z = cz;
         float max = 113;
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
-                var h = GetHeight(i + x * 16, j + y * 16);
+                int x = (cx<<4)|i, z = (cz<<4)|j;
+                var h = GetHeight(x, z);
                 d.position[i, 256, j] = (byte)h;
                 //注意K才是高度
                 for (int k = 0; (k <= h||k<=64)&&k<256; k++) {
@@ -74,10 +75,10 @@ public class GameManager : Singleton<GameManager>
                             d.position[i, k, j] = 1;
                         }
                         else {
-                            var t = GetTemperature(i, k, j);
-                            var hd = GetHumidity(i, k, j);
+                            var t = GetTemperature(x, k, z);
+                            var hd = GetHumidity(x, k, z);
                             //下雪
-                            if (t <= 35 && hd > 0.3f) {
+                            if (t <= 0 && hd > 0.3f) {
                                 d.position[i,k,j] = (byte)BlockType.grass_sn;
                             }
                             else if(h<64&& t < 0 && hd > 0.3f) {
@@ -129,21 +130,22 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    int send = 114514;
+    int seed = 114514;
     /// <summary>
     /// 将一个数，映射为0-1的数
     /// </summary>
-    /// <param name="x"></param>
+    /// <param name="x">映射值</param>
+    /// <param name="frequency">频率</param>
+    /// <param name="excursion">偏移值</param>
+    /// <param name="max">默认除以的</param>
     /// <returns></returns>
-    float map2decimals(float x,float customSend=0) {
-        float b = x / 16;
-        b = Fract(Mathf.Sin(send) * 1000)/100*b;
-        int max = 4000;
-        x %= max;
+    float map2decimals(float x,int frequency=7, float excursion = 0,int max = 6737) {
+        x += seed + excursion;
+        x *= frequency;
+        x%=max;
         x /= max;
-        x += b;
-        x += customSend;
-        x %= 1;
+        //x += customSend;
+        x = Fract(x);
         return x;
     }
     float Fract(float x) {
@@ -156,32 +158,26 @@ public class GameManager : Singleton<GameManager>
     /// <param name="x">x位置</param>
     /// <param name="y">y位置</param>
     int GetHeight(float x, float y) {
-        x = map2decimals(x,0.5f);
-        y = map2decimals(y,0.14f);
+        x = map2decimals(x);
+        y = map2decimals(y);
         //基本频率
-        float bf = 8;
+        float bf = 12;
         float rate = 2;
         var h = 128 * Mathf.PerlinNoise(bf * x%1, bf * y % 1) + 64 * Mathf.PerlinNoise(rate * bf*x % 1, rate * bf *y % 1) + 32 * Mathf.PerlinNoise(rate * rate * bf *x % 1, rate * rate * bf *y % 1);
         return (int)h;
 
     }
-    float GetTemperature(float x,float y,int h) {
-        x = map2decimals(x, 0.34f);
-        y = map2decimals(y, 0.78f);
+    float GetTemperature(float x,float y,float z) {
         //基本频率
-        float bf = 2;
-        var b = Mathf.PerlinNoise(bf * x % 1, bf * y % 1);
-        //int max = 6000000;
-        //x += send+ 60000;
-        //y += send + 60000;
-        //x /= max;
-        //y /= max;
-        //float bf = 8;
-        //var pl = new PerlinNoise();
-        //float b = (float)pl.perlin(bf * x % 1, bf * y % 1, h);
+        int bf = 17;
+        x = map2decimals(x,bf);
+        z = map2decimals(z,bf);
+        
+        var b = Mathf.PerlinNoise( x, z);
         //线性插值返回基础温度
-        b = Mathf.Lerp(-35, 35, b);
-        b -= h > 64 ? 0 : (h - 64) * 0.6f;
+        b = Mathf.Lerp(-35, 55, b);
+        Debug.Log(b);
+        b -= y <= 64 ? 0 : (y - 64) * 0.6f;
         return b;
     }
     /// <summary>
@@ -192,14 +188,10 @@ public class GameManager : Singleton<GameManager>
     /// <param name="h"></param>
     /// <returns></returns>
     float GetHumidity(float x, float y, int h) {
-        x = map2decimals(x, 0.74f);
-        y = map2decimals(y, 0.18f);
-        //基本频率
-        float bf = 2;
-        var b = Mathf.PerlinNoise(bf * x % 1, bf * y % 1);
+        x = map2decimals(x);
+        y = map2decimals(y);
+        var b = Mathf.PerlinNoise( x, y );
         b += b < 0.9 ? 0.1f : 0;
-        Debug.Log(b);
-        //线性插值返回基础温度
         return b;
     }
 
@@ -439,10 +431,10 @@ public class GameManager : Singleton<GameManager>
         var i = x / 16;
         var j = z / 16;
         if (x < 0) {
-            x += 16 * (-i+1);
+            return false;
         }
         if (z < 0) {
-            z += 16 * (-j+1);
+            return false;
         }
         if (y < 0) {
             return true;
@@ -453,7 +445,7 @@ public class GameManager : Singleton<GameManager>
         x %= 16;
         z %= 16;
         var d = GetMapData(i, j);
-        if (d == null) return true;
+        if (d == null) return false;
         //Debug.Log(x + " " + y + " " + z);
         //Debug.Log(new Vector3(x, y, z));
         if (d.position[x,y,z] != 0 ) {
