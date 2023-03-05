@@ -509,7 +509,7 @@ public class GameManager : Singleton<GameManager> {
 		p.name = map.x + "-" + map.z;
 		p.transform.position = new Vector3(map.x * 16, 0, map.z * 16);
 		var filter = p.GetComponent<MeshFilter>();
-		Material material = p.GetComponent<MeshRenderer>().material;
+		Material material = p.GetComponent<MeshRenderer>().sharedMaterial;
 		int count = 0;
 		List<Vector3> vertices = new();
 		List<int> triangles = new();
