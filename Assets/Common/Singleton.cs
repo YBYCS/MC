@@ -1,8 +1,7 @@
 using UnityEngine;
 
-namespace LYcommon
-{
-    public class Singleton<T> : MonoBehaviour where T : Singleton<T>//指定传入的T是继承了Singleton的类
+namespace LYcommon {
+	public class Singleton<T> : MonoBehaviour where T : Singleton<T>//指定传入的T是继承了Singleton的类
     {
         private static T instance;
 
@@ -10,7 +9,7 @@ namespace LYcommon
         //保证单例不重复创建
         protected virtual void Awake()
         {
-            if ((Object)instance != (Object)null)
+            if (instance != null)
             {
                 Object.Destroy(base.gameObject);
             }

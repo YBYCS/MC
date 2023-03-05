@@ -1,11 +1,10 @@
 using UnityEngine;
 
-namespace LYcommon
-{
-    /// <summary>
-    /// This script allows the camera to follow the character
-    /// </summary>
-    public class FollowCamera : MonoBehaviour
+namespace LYcommon {
+	/// <summary>
+	/// This script allows the camera to follow the character
+	/// </summary>
+	public class FollowCamera : MonoBehaviour
     {
         /// <summary>
         /// the boundary of the map

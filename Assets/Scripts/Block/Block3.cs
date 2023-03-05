@@ -4,11 +4,11 @@ using UnityEngine;
 /// ฒÝตุ id = 3 
 /// </summary>				
 public class Block3 : Block {
-    public override int id => 3;
+    public override int ID => 3;
 
-    public override string blockName => "ฒÝตุ";
+    public override string Name => "ฒÝตุ";
 
-    public override bool isTransparency => false;
+    public override bool IsTransparent => false;
 
     protected override string LeftSpritePath => "Blocks/grass_side";
 

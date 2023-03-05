@@ -1,10 +1,7 @@
-
 using LYcommon;
 using System.IO;
 using System.Text;
-using Unity.VisualScripting;
 using UnityEngine;
-
 
 public static class CommonFunction {
     /// <summary>
@@ -27,7 +24,7 @@ public static class CommonFunction {
     /// <param name="data">要写入的数据</param>
     /// <param name="fileMode">写入模式</param>
     public static void FileIO(string path, string data, FileMode fileMode = FileMode.Create) {
-        FileInfo fileInfo = new FileInfo(path);
+        FileInfo fileInfo = new(path);
         if (File.Exists(path) && fileMode == FileMode.Create) {
             Debug.Log("注意,已存在:" + path + "该文件将会被覆盖");
         }
@@ -39,15 +36,6 @@ public static class CommonFunction {
         using FileStream file = new(path, FileMode.Create);
         byte[] bytes = Encoding.UTF8.GetBytes(data);
         file.Write(bytes, 0, bytes.Length);
-    }
-
-    /// <summary>
-    /// 抛出一个异常
-    /// </summary>
-    /// <param name="data"></param>
-    /// <exception cref="CustomException"></exception>
-    public static void ThrowException(string data) {
-        throw new CustomException(data);
     }
 
     /// <summary>
@@ -74,7 +62,7 @@ public static class CommonFunction {
             dir += Input.GetAxisRaw("Virtual") * gameObject.transform.up;
         }
 
-        gameObject.transform.Translate(dir * Time.deltaTime * speed, Space.World);
+        gameObject.transform.Translate(speed * Time.deltaTime * dir, Space.World);
     }
 
     /// <summary>
@@ -90,15 +78,15 @@ public static class CommonFunction {
         return angle;
     }
 
-    /// <summary>
-    /// Check if it is on the ground. The gameObject must have collider2d
-    /// layermask参数设置的一些总结：1 << 10 打开第10的层。~(1 << 10) 打开除了第10之外的层。~(1 << 0) 打开所有的层。(1 << 10) | (1 << 8) 打开第10和第8的层。
-    /// </summary>
-    /// <param name="gameObject">object to be detected</param>
-    /// <param name="layerMash">the layerMesh. If you want deceted the ground whose layer is 7, you should pass parameter "1<<7"</param>
-    /// <param name="extraDistance">The distance to be deteted in addition to the distance to itself</param>
-    /// <returns></returns>
-    public static bool isOnGround2D(GameObject gameObject, int layerMash, float extraDistance = 0.1f) {
+	/// <summary>
+	/// Check if it is on the ground. The gameObject must have collider2d
+	/// layermask参数设置的一些总结：1 &lt;&lt; 10 打开第10的层。~(1 &lt;&lt; 10) 打开除了第10之外的层。~(1 &lt;&lt; 0) 打开所有的层。(1 &lt;&lt; 10) | (1 &lt;&lt; 8) 打开第10和第8的层。
+	/// </summary>
+	/// <param name="gameObject">object to be detected</param>
+	/// <param name="layerMash">the layerMesh. If you want deceted the ground whose layer is 7, you should pass parameter "1&lt;&lt;7"</param>
+	/// <param name="extraDistance">The distance to be deteted in addition to the distance to itself</param>
+	/// <returns></returns>
+	public static bool IsOnGround2D(GameObject gameObject, int layerMash, float extraDistance = 0.1f) {
         var hit = Physics2D.Raycast(gameObject.transform.position, -gameObject.transform.up, extraDistance + gameObject.GetComponent<Collider2D>().bounds.extents.y, layerMash);
         return hit.collider != null;
     }
@@ -145,7 +133,4 @@ public static class CommonFunction {
         // Return the x coordinate of the point on the curve at the found t
         return Mathf.Pow(1 - t, 3) * x1 + 3 * t * Mathf.Pow(1 - t, 2) * x2 + 3 * Mathf.Pow(t, 2) * (1 - t) * x3 + Mathf.Pow(t, 3) * x4;
     }
-
 }
-
-

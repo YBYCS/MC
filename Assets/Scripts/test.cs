@@ -1,14 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using static UnityEngine.Mesh;
 
 public class test : MonoBehaviour
 {
-    List<Vector3> vertices = new List<Vector3>();
-    List<int> triangles = new List<int>();
-    List<Vector2> uvs = new List<Vector2>();
+	readonly List<Vector3> vertices = new List<Vector3>();
+	readonly List<int> triangles = new List<int>();
+	readonly List<Vector2> uvs = new List<Vector2>();
     [SerializeField]
     GameObject m_BlockPrefab;
     // Source textures.
@@ -16,7 +13,7 @@ public class test : MonoBehaviour
 
     // Rectangles for individual atlas textures.
     Rect[] rects;
-    GameObject block;
+	readonly GameObject block;
 
     void Start() {
         textures = new Texture2D[2];

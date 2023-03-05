@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class GrassBlock : Block {
-    public override string blockName => "ฒÝตุ";
+    public override string Name => "ฒÝตุ";
 
-    public override int id => 3;
+    public override int ID => 3;
 
-    public override bool isTransparency => false;
+    public override bool IsTransparent => false;
 
     protected override string LeftSpritePath => "Blocks/grass_side";
 

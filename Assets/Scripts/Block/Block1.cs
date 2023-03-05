@@ -3,11 +3,11 @@
 /// ฤเอม id = 1 
 /// </summary>				
 public class Block1 : Block {
-    public override int id => 1;
+    public override int ID => 1;
 
-    public override string blockName => "ฤเอม";
+    public override string Name => "ฤเอม";
 
-    public override bool isTransparency => false;
+    public override bool IsTransparent => false;
 
     protected override string LeftSpritePath => "Blocks/dirt";
 

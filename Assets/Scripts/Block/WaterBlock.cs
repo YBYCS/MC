@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class WaterBlock : Block {
-    public override string blockName => "ˮ";
+    public override string Name => "ˮ";
 
-    public override int id => 2;
+    public override int ID => 2;
 
-    public override bool isTransparency => true;
+    public override bool IsTransparent => true;
     
 
     protected override string LeftSpritePath => "Blocks/water_overlay";
